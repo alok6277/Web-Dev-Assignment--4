@@ -1,0 +1,1305 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OrbitChat - Real-time Chat</title>
+
+<script src="/socket.io/socket.io.js"></script>
+
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+}
+
+body {
+  background: #080f20;
+  color: #edf2ff;
+  min-height: 100vh;
+}
+
+button, input {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* LOGIN */
+
+#authScreen {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  background:
+    radial-gradient(circle at 10% 10%, #173d4a, transparent 35%),
+    radial-gradient(circle at 90% 90%, #28205a, transparent 35%),
+    #080f20;
+}
+
+.login-card {
+  width: 100%;
+  max-width: 420px;
+  background: #111c30;
+  border: 1px solid #2b3a56;
+  border-radius: 20px;
+  padding: 32px;
+  box-shadow: 0 20px 60px #0006;
+}
+
+.logo {
+  text-align: center;
+  color: #8996ff;
+  font-size: 30px;
+  font-weight: 800;
+  margin-bottom: 10px;
+}
+
+.login-subtitle {
+  color: #9baaca;
+  text-align: center;
+  margin-bottom: 27px;
+  font-size: 13px;
+}
+
+.login-card h2 {
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+.login-info {
+  color: #94a4c0;
+  text-align: center;
+  font-size: 13px;
+  margin-bottom: 24px;
+}
+
+.field-label {
+  display: block;
+  font-size: 13px;
+  margin-bottom: 8px;
+  color: #d4def1;
+}
+
+.login-input {
+  width: 100%;
+  padding: 13px;
+  border: 1px solid #344563;
+  border-radius: 10px;
+  background: #0d172a;
+  color: white;
+  outline: none;
+  margin-bottom: 17px;
+}
+
+.login-input:focus {
+  border-color: #7d91ff;
+}
+
+.primary-btn {
+  width: 100%;
+  padding: 14px;
+  border-radius: 10px;
+  color: white;
+  background: linear-gradient(100deg, #536bdf, #9366e9);
+  font-weight: bold;
+}
+
+.google-btn {
+  width: 100%;
+  padding: 13px;
+  background: white;
+  color: #263248;
+  border-radius: 10px;
+  margin-top: 15px;
+  font-weight: bold;
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #8392ac;
+  font-size: 12px;
+  margin: 22px 0;
+}
+
+.divider::before,
+.divider::after {
+  content: "";
+  height: 1px;
+  background: #344563;
+  flex: 1;
+}
+
+.error-message {
+  color: #ff8999;
+  text-align: center;
+  font-size: 13px;
+  margin-top: 12px;
+}
+
+/* APP */
+
+#appShell {
+  min-height: 100vh;
+  display: flex;
+}
+
+.sidebar {
+  width: 280px;
+  min-height: 100vh;
+  background: #111c30;
+  border-right: 1px solid #293957;
+  padding: 26px 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-logo {
+  font-size: 27px;
+  color: #8996ff;
+  font-weight: 800;
+  margin: 5px 8px 40px;
+}
+
+.section-label {
+  color: #8294b4;
+  font-size: 11px;
+  font-weight: bold;
+  letter-spacing: 1.5px;
+  margin: 10px 0 15px;
+}
+
+.nav-btn {
+  width: 100%;
+  text-align: left;
+  padding: 15px;
+  border-radius: 11px;
+  color: #bdc9df;
+  background: transparent;
+  margin-bottom: 8px;
+}
+
+.nav-btn:hover,
+.nav-btn.active {
+  background: #263654;
+  color: white;
+}
+
+.room-chip {
+  float: right;
+  background: #123e3c;
+  color: #65e6d1;
+  padding: 5px 10px;
+  border-radius: 20px;
+  font-size: 10px;
+}
+
+.room-card {
+  border: 1px solid #293957;
+  background: #0d172a;
+  padding: 16px;
+  border-radius: 17px;
+  margin-top: 18px;
+}
+
+.room-card h3 {
+  font-size: 15px;
+  margin-bottom: 9px;
+}
+
+.room-card p {
+  color: #94a4c0;
+  font-size: 12px;
+  line-height: 1.6;
+  margin-bottom: 13px;
+}
+
+.room-input {
+  width: 100%;
+  background: #111d32;
+  color: white;
+  border: 1px solid #344563;
+  border-radius: 9px;
+  padding: 12px;
+  outline: none;
+  margin-bottom: 10px;
+}
+
+.room-input:focus {
+  border-color: #65dfd0;
+}
+
+.mini-btn {
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  color: #071322;
+  background: linear-gradient(100deg, #4bd6c3, #7f8ff7);
+  font-weight: bold;
+  margin-top: 5px;
+}
+
+.mini-btn.secondary {
+  color: white;
+  background: #293b5a;
+}
+
+.mini-btn.danger {
+  background: #462a3d;
+  color: #ff9aaa;
+}
+
+.profile-area {
+  margin-top: auto;
+  border-top: 1px solid #293957;
+  padding-top: 20px;
+}
+
+.profile {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 18px;
+  min-width: 0;
+}
+
+.avatar {
+  width: 45px;
+  height: 45px;
+  min-width: 45px;
+  border-radius: 15px;
+  background: linear-gradient(135deg, #7c8cff, #aa62dc);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  color: white;
+}
+
+.profile-info {
+  min-width: 0;
+}
+
+.profile-info strong {
+  display: block;
+  font-size: 14px;
+}
+
+.profile-info small {
+  display: block;
+  color: #9baaca;
+  font-size: 11px;
+  overflow-wrap: anywhere;
+  margin-top: 4px;
+}
+
+.logout-btn {
+  width: 100%;
+  background: #432a3c;
+  color: #ff9aaa;
+  padding: 13px;
+  border-radius: 10px;
+}
+
+/* CHAT */
+
+.main-content {
+  flex: 1;
+  min-width: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.topbar {
+  height: 82px;
+  padding: 0 30px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #111c30;
+  border-bottom: 1px solid #293957;
+}
+
+.topbar h2 {
+  font-size: 20px;
+}
+
+.connection {
+  color: #65e6bd;
+  font-size: 12px;
+}
+
+.chat-container {
+  flex: 1;
+  min-height: 0;
+  padding: 25px 30px;
+  display: flex;
+  flex-direction: column;
+}
+
+.chat-heading {
+  margin-bottom: 20px;
+}
+
+.chat-heading h2 {
+  font-size: 22px;
+  margin-bottom: 8px;
+}
+
+.chat-heading p {
+  color: #9baaca;
+  font-size: 13px;
+}
+
+.room-code-display {
+  color: #65e6d1;
+  margin-top: 9px;
+  font-size: 13px;
+  font-weight: bold;
+}
+
+.messages {
+  flex: 1;
+  min-height: 250px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 15px 5px;
+}
+
+.system-message {
+  text-align: center;
+  color: #9aacca;
+  font-size: 12px;
+  padding: 10px;
+  overflow-wrap: anywhere;
+}
+
+.message {
+  max-width: 75%;
+  width: fit-content;
+  background: #202e48;
+  padding: 12px 15px;
+  border-radius: 13px;
+  overflow-wrap: anywhere;
+}
+
+.message.own {
+  align-self: flex-end;
+  background: linear-gradient(120deg, #345f83, #4c5b9e);
+}
+
+.message-meta {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 7px;
+  font-size: 11px;
+  color: #aebdff;
+}
+
+.message-text {
+  font-size: 14px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+
+.composer {
+  display: flex;
+  gap: 12px;
+  border-top: 1px solid #293957;
+  padding-top: 18px;
+}
+
+.composer input {
+  flex: 1;
+  min-width: 0;
+  padding: 15px;
+  background: #1a2942;
+  border: 1px solid #344563;
+  color: white;
+  border-radius: 11px;
+  outline: none;
+}
+
+.composer input:focus {
+  border-color: #7e91ff;
+}
+
+.send-btn {
+  padding: 0 24px;
+  border-radius: 11px;
+  background: linear-gradient(100deg, #4bd6c3, #7f8ff7);
+  color: #071322;
+  font-weight: bold;
+}
+
+.toast {
+  position: fixed;
+  right: 25px;
+  bottom: 25px;
+  padding: 14px 20px;
+  background: #263957;
+  color: white;
+  border: 1px solid #526486;
+  border-radius: 10px;
+  z-index: 20;
+  font-size: 13px;
+  box-shadow: 0 8px 25px #0005;
+}
+
+@media(max-width: 750px) {
+  #appShell {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+    min-height: auto;
+    padding: 15px;
+  }
+
+  .sidebar-logo {
+    margin: 5px 8px 15px;
+  }
+
+  .profile-area {
+    display: none;
+  }
+
+  .topbar {
+    height: 65px;
+    padding: 0 15px;
+  }
+
+  .chat-container {
+    padding: 18px 14px;
+    min-height: 65vh;
+  }
+
+  .message {
+    max-width: 90%;
+  }
+
+  .send-btn {
+    padding: 0 15px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<!-- LOGIN PAGE -->
+
+<section id="authScreen">
+  <div class="login-card">
+
+    <div class="logo">✦ OrbitChat</div>
+
+    <p class="login-subtitle">
+      Connect. Chat. Create your own space.
+    </p>
+
+    <h2>Welcome Back!</h2>
+
+    <p class="login-info">
+      Choose how you want to continue
+    </p>
+
+    <form id="manualLoginForm">
+
+      <label class="field-label">Your Name</label>
+
+      <input
+        class="login-input"
+        id="loginName"
+        type="text"
+        placeholder="Enter your name"
+        maxlength="40"
+        required
+      >
+
+      <label class="field-label">Email Address</label>
+
+      <input
+        class="login-input"
+        id="loginEmail"
+        type="email"
+        placeholder="Enter your email"
+        maxlength="100"
+        required
+      >
+
+      <button class="primary-btn" id="manualLoginBtn" type="submit">
+        Continue with Name & Email
+      </button>
+
+    </form>
+
+    <div class="divider">OR</div>
+
+    <button class="google-btn" id="googleLoginBtn" type="button">
+      🌐 Continue with Google
+    </button>
+
+    <p class="error-message" id="authError"></p>
+
+  </div>
+</section>
+
+<!-- MAIN APP -->
+
+<section id="appShell" class="hidden">
+
+  <aside class="sidebar">
+
+    <div class="sidebar-logo">✦ OrbitChat</div>
+
+    <div class="section-label">CONVERSATIONS</div>
+
+    <button class="nav-btn active" id="globalTab">
+      🌍 Global Chat
+    </button>
+
+    <button class="nav-btn" id="roomTab">
+      🏠 Private Room
+      <span class="room-chip hidden" id="roomChip">Active</span>
+    </button>
+
+    <!-- CREATE ROOM -->
+
+    <section class="room-card">
+
+      <h3>＋ Create a room</h3>
+
+      <p>
+        Start a private space and share its code with friends.
+      </p>
+
+      <input
+        class="room-input"
+        id="roomName"
+        type="text"
+        maxlength="40"
+        placeholder="Enter room name (optional)"
+      >
+
+      <button class="mini-btn" id="createBtn">
+        Create New Room
+      </button>
+
+    </section>
+
+    <!-- JOIN ROOM -->
+
+    <section class="room-card">
+
+      <h3>↗ Join a room</h3>
+
+      <p>
+        Enter a room code shared by your friend.
+      </p>
+
+      <input
+        class="room-input"
+        id="roomCode"
+        type="text"
+        maxlength="20"
+        placeholder="Example: NX-A1B2-123"
+      >
+
+      <button class="mini-btn secondary" id="joinBtn">
+        Join Room
+      </button>
+
+      <button
+        class="mini-btn danger hidden"
+        id="leaveRoomBtn"
+      >
+        Leave Current Room
+      </button>
+
+    </section>
+
+    <!-- PROFILE -->
+
+    <div class="profile-area">
+
+      <div class="profile">
+
+        <div class="avatar" id="avatar">U</div>
+
+        <div class="profile-info">
+          <strong id="profileName">User</strong>
+          <small id="profileEmail">user@email.com</small>
+        </div>
+
+      </div>
+
+      <button class="logout-btn" id="logoutBtn">
+        ↪ Logout
+      </button>
+
+    </div>
+
+  </aside>
+
+  <!-- CHAT PANEL -->
+
+  <main class="main-content">
+
+    <header class="topbar">
+
+      <h2 id="topbarTitle">Global Chat</h2>
+
+      <span class="connection" id="connectionStatus">
+        ● Connecting...
+      </span>
+
+    </header>
+
+    <section class="chat-container">
+
+      <div class="chat-heading">
+
+        <h2 id="chatTitle">🌍 Global Chat</h2>
+
+        <p id="chatSubtitle">
+          Chat with everyone on OrbitChat
+        </p>
+
+        <div
+          class="room-code-display hidden"
+          id="roomCodeDisplay"
+        ></div>
+
+      </div>
+
+      <div class="messages" id="messages">
+
+        <div class="system-message">
+          Welcome to OrbitChat!
+        </div>
+
+      </div>
+
+      <form class="composer" id="chatForm">
+
+        <input
+          id="messageInput"
+          type="text"
+          autocomplete="off"
+          maxlength="2000"
+          placeholder="Message everyone..."
+          required
+        >
+
+        <button class="send-btn" type="submit">
+          Send ➤
+        </button>
+
+      </form>
+
+    </section>
+
+  </main>
+
+</section>
+
+<div class="toast hidden" id="toast"></div>
+
+<!-- JAVASCRIPT -->
+
+<script>
+
+const $ = (id) => document.getElementById(id);
+
+let profile = null;
+let socket = null;
+
+let currentMode = "global";
+let currentRoomId = null;
+
+
+// ==============================
+// TOAST
+// ==============================
+
+function showToast(message) {
+  const toast = $("toast");
+
+  toast.textContent = message;
+  toast.classList.remove("hidden");
+
+  setTimeout(() => {
+    toast.classList.add("hidden");
+  }, 3000);
+}
+
+
+// ==============================
+// LOGIN
+// ==============================
+
+$("googleLoginBtn").addEventListener("click", () => {
+  window.location.href = "/auth/google";
+});
+
+$("manualLoginForm").addEventListener("submit", async (event) => {
+  event.preventDefault();
+
+  const name = $("loginName").value.trim();
+  const email = $("loginEmail").value.trim().toLowerCase();
+
+  $("authError").textContent = "";
+
+  const button = $("manualLoginBtn");
+
+  button.disabled = true;
+  button.textContent = "Please wait...";
+
+  try {
+    const response = await fetch("/auth/guest", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ name, email })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || "Login failed");
+    }
+
+    profile = data.user;
+
+    showDashboard();
+
+  } catch (error) {
+    $("authError").textContent = error.message;
+  } finally {
+    button.disabled = false;
+    button.textContent = "Continue with Name & Email";
+  }
+});
+
+
+// ==============================
+// SESSION CHECK
+// ==============================
+
+async function checkSession() {
+  try {
+    const response = await fetch("/api/me");
+
+    if (response.ok) {
+      const data = await response.json();
+
+      profile = data.user;
+
+      showDashboard();
+      return;
+    }
+  } catch (error) {
+    console.error(error);
+  }
+
+  showLogin();
+}
+
+
+// ==============================
+// SHOW LOGIN
+// ==============================
+
+function showLogin() {
+  $("authScreen").classList.remove("hidden");
+  $("appShell").classList.add("hidden");
+}
+
+
+// ==============================
+// DASHBOARD
+// ==============================
+
+function showDashboard() {
+  if (!profile) return;
+
+  $("authScreen").classList.add("hidden");
+  $("appShell").classList.remove("hidden");
+
+  $("profileName").textContent = profile.name;
+  $("profileEmail").textContent = profile.email;
+
+  $("avatar").textContent =
+    profile.name.charAt(0).toUpperCase();
+
+  connectSocket();
+}
+
+
+// ==============================
+// SOCKET CONNECTION
+// ==============================
+
+function connectSocket() {
+  if (socket) {
+    socket.disconnect();
+  }
+
+  socket = io();
+
+  registerSocketEvents();
+}
+
+
+// ==============================
+// SOCKET EVENTS
+// ==============================
+
+function registerSocketEvents() {
+
+  socket.on("connect", () => {
+    $("connectionStatus").textContent = "● Connected";
+    $("connectionStatus").style.color = "#65e6bd";
+
+    showToast("Connected to OrbitChat");
+  });
+
+  socket.on("disconnect", () => {
+    $("connectionStatus").textContent = "● Disconnected";
+    $("connectionStatus").style.color = "#ff8999";
+  });
+
+  socket.on("connect_error", (error) => {
+    console.error(error.message);
+
+    $("connectionStatus").textContent = "● Login required";
+  });
+
+  socket.on("online-count", (count) => {
+    console.log("Online users:", count);
+  });
+
+  // GLOBAL MESSAGE
+
+  socket.on("global-message", (data) => {
+    if (currentMode === "global") {
+      addMessage(data, data.socketId === socket.id);
+    }
+  });
+
+  // ROOM CREATED
+
+  socket.on("room-created", (data) => {
+
+    currentRoomId = data.roomId;
+
+    $("roomCode").value = currentRoomId;
+
+    $("leaveRoomBtn").classList.remove("hidden");
+
+    $("roomChip").classList.remove("hidden");
+
+    switchToRoom(currentRoomId, data.roomName);
+
+    clearMessages();
+
+    addNotice(
+      `Room ${currentRoomId} created. Share this code with your friends.`
+    );
+
+    addRoomCodeMessage(currentRoomId);
+
+    showToast("Private room created successfully!");
+  });
+
+  // ROOM JOINED
+
+  socket.on("room-joined", (data) => {
+
+    currentRoomId = data.roomId;
+
+    $("leaveRoomBtn").classList.remove("hidden");
+
+    $("roomChip").classList.remove("hidden");
+
+    switchToRoom(currentRoomId, data.roomName);
+
+    clearMessages();
+
+    addNotice(`You joined room ${currentRoomId}.`);
+
+    showToast("Joined private room!");
+  });
+
+  // ROOM MESSAGE
+
+  socket.on("room-message", (data) => {
+    if (currentMode === "room" && currentRoomId) {
+      addMessage(data, data.socketId === socket.id);
+    }
+  });
+
+  // ROOM NOTICE
+
+  socket.on("room-notice", (message) => {
+    if (currentMode === "room") {
+      addNotice(message);
+    }
+  });
+
+  // ROOM MEMBERS
+
+  socket.on("room-members", (members) => {
+    if (currentMode === "room") {
+      $("chatSubtitle").textContent =
+        `${members.length} member${members.length === 1 ? "" : "s"} in this private room`;
+    }
+  });
+
+  // ROOM LEFT
+
+  socket.on("room-left", () => {
+    currentRoomId = null;
+
+    $("leaveRoomBtn").classList.add("hidden");
+    $("roomChip").classList.add("hidden");
+
+    switchToGlobal();
+  });
+}
+
+
+// ==============================
+// MESSAGE FUNCTIONS
+// ==============================
+
+function clearMessages() {
+  $("messages").innerHTML = "";
+}
+
+function addNotice(message) {
+  const element = document.createElement("div");
+
+  element.className = "system-message";
+  element.textContent = message;
+
+  $("messages").appendChild(element);
+
+  $("messages").scrollTop = $("messages").scrollHeight;
+}
+
+function addRoomCodeMessage(code) {
+  const element = document.createElement("div");
+
+  element.className = "system-message";
+  element.textContent = "ROOM CODE: " + code;
+
+  element.style.color = "#65e6d1";
+  element.style.fontWeight = "bold";
+  element.style.cursor = "pointer";
+
+  element.title = "Click to copy room code";
+
+  element.addEventListener("click", () => {
+    navigator.clipboard.writeText(code)
+      .then(() => showToast("Room code copied!"))
+      .catch(() => showToast("Room Code: " + code));
+  });
+
+  $("messages").appendChild(element);
+}
+
+function addMessage(data, own) {
+
+  const wrap = document.createElement("div");
+
+  wrap.className = "message" + (own ? " own" : "");
+
+  const meta = document.createElement("div");
+
+  meta.className = "message-meta";
+
+  const sender = document.createElement("strong");
+
+  sender.textContent = own ? "You" : (data.name || "User");
+
+  const time = document.createElement("span");
+
+  time.textContent = data.time
+    ? new Date(data.time).toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit"
+      })
+    : "";
+
+  meta.append(sender, time);
+
+  const text = document.createElement("div");
+
+  text.className = "message-text";
+  text.textContent = data.text || "";
+
+  wrap.append(meta, text);
+
+  $("messages").appendChild(wrap);
+
+  $("messages").scrollTop = $("messages").scrollHeight;
+}
+
+
+// ==============================
+// SWITCH GLOBAL CHAT
+// ==============================
+
+function switchToGlobal() {
+
+  currentMode = "global";
+
+  currentRoomId = null;
+
+  $("globalTab").classList.add("active");
+  $("roomTab").classList.remove("active");
+
+  $("roomChip").classList.add("hidden");
+
+  $("topbarTitle").textContent = "Global Chat";
+
+  $("chatTitle").textContent = "🌍 Global Chat";
+
+  $("chatSubtitle").textContent =
+    "Chat with everyone on OrbitChat";
+
+  $("roomCodeDisplay").classList.add("hidden");
+
+  $("messageInput").placeholder = "Message everyone...";
+
+  clearMessages();
+
+  addNotice("You are now in Global Chat.");
+}
+
+
+// ==============================
+// SWITCH PRIVATE ROOM
+// ==============================
+
+function switchToRoom(roomId, roomName = "Private Room") {
+
+  currentMode = "room";
+
+  currentRoomId = roomId;
+
+  $("globalTab").classList.remove("active");
+  $("roomTab").classList.add("active");
+
+  $("roomChip").classList.remove("hidden");
+
+  $("topbarTitle").textContent = roomName;
+
+  $("chatTitle").textContent =
+    `🏠 ${roomName} · ${roomId}`;
+
+  $("chatSubtitle").textContent =
+    "Only people with this room code can join";
+
+  $("roomCodeDisplay").textContent =
+    "Room Code: " + roomId;
+
+  $("roomCodeDisplay").classList.remove("hidden");
+
+  $("messageInput").placeholder = "Message your room...";
+}
+
+
+// ==============================
+// GLOBAL TAB
+// ==============================
+
+$("globalTab").addEventListener("click", () => {
+
+  if (currentRoomId && socket && socket.connected) {
+    socket.emit("leave-room");
+  }
+
+  switchToGlobal();
+});
+
+
+// ==============================
+// ROOM TAB
+// ==============================
+
+$("roomTab").addEventListener("click", () => {
+
+  if (!currentRoomId) {
+    showToast("Create a room or join using a room code first.");
+    return;
+  }
+
+  switchToRoom(currentRoomId);
+});
+
+
+// ==============================
+// CREATE ROOM
+// ==============================
+
+$("createBtn").addEventListener("click", () => {
+
+  if (!socket || !socket.connected) {
+    showToast("Connecting to server. Please wait.");
+    return;
+  }
+
+  const roomName = $("roomName").value.trim();
+
+  socket.emit(
+    "create-room",
+    { roomName },
+    (result) => {
+      if (!result || !result.ok) {
+        showToast(result?.error || "Could not create room.");
+      }
+    }
+  );
+});
+
+
+// ==============================
+// JOIN ROOM
+// ==============================
+
+$("joinBtn").addEventListener("click", () => {
+
+  if (!socket || !socket.connected) {
+    showToast("Connecting to server. Please wait.");
+    return;
+  }
+
+  const roomCode =
+    $("roomCode").value.trim().toUpperCase();
+
+  if (!roomCode) {
+    showToast("Please enter a room code.");
+    return;
+  }
+
+  socket.emit("join-room", roomCode, (result) => {
+
+    if (!result || !result.ok) {
+      showToast(result?.error || "Unable to join room.");
+    }
+
+  });
+});
+
+
+// ==============================
+// LEAVE ROOM
+// ==============================
+
+$("leaveRoomBtn").addEventListener("click", () => {
+
+  if (!socket || !currentRoomId) return;
+
+  socket.emit("leave-room");
+});
+
+
+// ==============================
+// SEND MESSAGE
+// ==============================
+
+$("chatForm").addEventListener("submit", (event) => {
+
+  event.preventDefault();
+
+  const message = $("messageInput").value.trim();
+
+  if (!message) return;
+
+  if (!socket || !socket.connected) {
+    showToast("Server is not connected.");
+    return;
+  }
+
+  if (currentMode === "global") {
+
+    socket.emit("global-message", message);
+
+  } else if (currentRoomId) {
+
+    socket.emit("room-message", message);
+
+  } else {
+
+    showToast("Please join a room first.");
+    return;
+
+  }
+
+  $("messageInput").value = "";
+  $("messageInput").focus();
+});
+
+
+// ==============================
+// LOGOUT
+// ==============================
+
+$("logoutBtn").addEventListener("click", async () => {
+
+  if (socket) {
+    socket.disconnect();
+    socket = null;
+  }
+
+  try {
+    await fetch("/auth/logout", {
+      method: "POST"
+    });
+  } catch (error) {
+    console.error(error);
+  }
+
+  profile = null;
+  currentRoomId = null;
+
+  $("manualLoginForm").reset();
+
+  showLogin();
+
+  showToast("You have logged out.");
+});
+
+
+// ==============================
+// START APPLICATION
+// ==============================
+
+checkSession();
+
+</script>
+
+</body>
+</html>
